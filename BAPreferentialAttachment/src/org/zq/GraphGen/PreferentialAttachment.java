@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import org.gephi.io.generator.spi.Generator;
 import org.gephi.io.generator.spi.GeneratorUI;
 import org.gephi.io.importer.api.ContainerLoader;
+import org.gephi.io.importer.api.EdgeDefault;
 import org.gephi.io.importer.api.EdgeDraft;
 import org.gephi.io.importer.api.NodeDraft;
 import org.gephi.utils.progress.Progress;
@@ -39,6 +40,8 @@ public class PreferentialAttachment implements Generator {
 
         generateBA(container, nodeList, edgeList);
 
+        container.setEdgeDefault(EdgeDefault.UNDIRECTED);
+
         // fill in the graph
         Iterator<EdgeDraft> edgeIter = edgeList.iterator();
 
@@ -46,7 +49,8 @@ public class PreferentialAttachment implements Generator {
             container.addNode(nodeList[i]);
         }
         while(edgeIter.hasNext()){
-            container.addEdge(edgeIter.next());
+            EdgeDraft e = edgeIter.next();
+            container.addEdge(e);
         }
     }
 
@@ -66,9 +70,11 @@ public class PreferentialAttachment implements Generator {
         for(int i=0; i<numInitNodes; i++){
             for(int j=i+1; j<numInitNodes; j++){
                 EdgeDraft e = container.factory().newEdgeDraft();
+                //e.setType(EdgeDraft.EdgeType.UNDIRECTED);
                 e.setSource(nodeList[i]);
                 e.setTarget(nodeList[j]);
-                e.setType(EdgeDraft.EdgeType.UNDIRECTED);
+                //e.setType(EdgeDraft.EdgeType.MUTUAL);
+                edgeList.add(e);
             }
         }
 
@@ -102,10 +108,11 @@ public class PreferentialAttachment implements Generator {
 
                 //add the edge
                 EdgeDraft e = container.factory().newEdgeDraft();
+                //e.setType(EdgeDraft.EdgeType.UNDIRECTED);
                 e.setSource(nodeList[curNodeIndex]);
                 e.setTarget(nodeList[curTarget]);
+                //e.setType(EdgeDraft.EdgeType.MUTUAL);
                 edgeList.add(e);
-
 
                 numEdgeAdded++;
             }
