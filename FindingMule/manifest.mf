@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.zq.Mule
+OpenIDE-Module-Localizing-Bundle: org/zq/Mule/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
