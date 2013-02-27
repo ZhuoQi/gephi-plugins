@@ -36,6 +36,11 @@ public class GetMule implements Statistics{
         adjMatrix = getBitRepresentation(g);
         int numRemainNodes = numNodes;
         BitSet subsmStatus = new BitSet(numNodes);
+        
+        int[] parent = new int[numNodes];
+        for(int i=0; i<numNodes; i++){
+            parent[i] = i;
+        }
 
 
         boolean hasSubsumption = true;
@@ -57,7 +62,7 @@ public class GetMule implements Statistics{
                             if(tempResult.equals(tempSource)){
                                 subsmStatus.set(i);
                                 numRemainNodes--;
-
+                                parent[i] = j;
                                 hasSubsumption = true;
                                 break;
                             }
@@ -67,21 +72,40 @@ public class GetMule implements Statistics{
             }//end outer for
             iterCount ++;
         }
+        
+        for(int i=0; i<numNodes; i++){
+            parent[i] = findParent(parent, i, subsmStatus);
+        }
 
         redundancyRatio = 1 - (double)numRemainNodes/(double)numNodes;
 
-        //write result into node column
+        //write subsumption result into node column
         AttributeTable nodeTable = am.getNodeTable();
-        AttributeColumn ac = nodeTable.getColumn("Subsumed");
-        if(ac == null){
-            ac = nodeTable.addColumn("Subsumed", "Subsumed", AttributeType.BOOLEAN, AttributeOrigin.COMPUTED, false);
+        AttributeColumn subsColumn = nodeTable.getColumn("Subsumed");
+        if(subsColumn == null){
+            subsColumn = nodeTable.addColumn("Subsumed", "Subsumed", AttributeType.BOOLEAN, AttributeOrigin.COMPUTED, false);
         }
+        AttributeColumn parentColumn = nodeTable.getColumn("Parent");
+        if(parentColumn == null){
+            parentColumn = nodeTable.addColumn("Parent", "Parent", AttributeType.INT, AttributeOrigin.COMPUTED, 0);
+        }
+        
         NodeIterable ni = g.getNodes();
         NodeIterator it = ni.iterator();
         int idPointer = 0;
         while(it.hasNext()){
             Node n = it.next();
-            n.getAttributes().setValue(ac.getIndex(), subsmStatus.get(idPointer++));
+            n.getAttributes().setValue(subsColumn.getIndex(), subsmStatus.get(idPointer));
+            n.getAttributes().setValue(parentColumn.getIndex(), parent[idPointer]);
+            idPointer++;
+        }
+    }
+    
+    private int findParent(int[] parent, int nodeIndex, BitSet subsmStat){
+        if(subsmStat.get(parent[nodeIndex]) == true){
+            return findParent(parent, parent[nodeIndex], subsmStat);
+        }else{
+            return parent[nodeIndex];
         }
     }
 
